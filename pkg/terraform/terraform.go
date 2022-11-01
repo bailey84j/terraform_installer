@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/openshift/installer/pkg/lineprinter"
+	"github.com/bailey84j/terraform_installer/pkg/lineprinter"
 )
 
 // newTFExec creates a tfexec.Terraform for executing Terraform CLI commands.

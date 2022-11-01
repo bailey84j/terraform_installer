@@ -35,18 +35,18 @@ func TFVars(clusterID string, clusterDomain string, baseDomain string, machineV4
 	}
 
 	config := &config{
-		ClusterID:             clusterID,
-		ClusterDomain:         strings.TrimSuffix(clusterDomain, "."),
-		BaseDomain:            strings.TrimSuffix(baseDomain, "."),
-		MachineV4CIDRs:        machineV4CIDRs,
-		MachineV6CIDRs:        machineV6CIDRs,
-		UseIPv4:               useIPv4,
-		UseIPv6:               useIPv6,
-		Masters:               masterCount,
-		MastersSchedulable:    mastersSchedulable,
-		IgnitionBootstrap:     bootstrapIgn,
-		IgnitionBootstrapFile: f.Name(),
-		IgnitionMaster:        masterIgn,
+		ClusterID:          clusterID,
+		ClusterDomain:      strings.TrimSuffix(clusterDomain, "."),
+		BaseDomain:         strings.TrimSuffix(baseDomain, "."),
+		MachineV4CIDRs:     machineV4CIDRs,
+		MachineV6CIDRs:     machineV6CIDRs,
+		UseIPv4:            useIPv4,
+		UseIPv6:            useIPv6,
+		Masters:            masterCount,
+		MastersSchedulable: mastersSchedulable,
+		//IgnitionBootstrap:     bootstrapIgn,
+		//IgnitionBootstrapFile: f.Name(),
+		//IgnitionMaster:        masterIgn,
 	}
 
 	return json.MarshalIndent(config, "", "  ")
