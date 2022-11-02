@@ -1,1 +1,3 @@
 bin/**
+install-config.yaml
+.openshift_install_state.json
