@@ -8,6 +8,7 @@ import (
 	survey "github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/core"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/bailey84j/terraform_installer/pkg/types/aws"
 	"github.com/bailey84j/terraform_installer/pkg/version"
@@ -15,7 +16,9 @@ import (
 
 // Platform collects AWS-specific configuration.
 func Platform() (*aws.Platform, error) {
+	logrus.Debugf("Trace Me - In aws.Platform()")
 	architecture := version.DefaultArch()
+	logrus.Debugf("Trace Me - Arch - %v", architecture)
 	regions := knownPublicRegions(architecture)
 	longRegions := make([]string, 0, len(regions))
 	shortRegions := make([]string, 0, len(regions))
@@ -23,6 +26,7 @@ func Platform() (*aws.Platform, error) {
 		longRegions = append(longRegions, fmt.Sprintf("%s (%s)", id, location))
 		shortRegions = append(shortRegions, id)
 	}
+	logrus.Debugf("Trace Me - In aws.Platform() - D1")
 	var regionTransform survey.Transformer = func(ans interface{}) interface{} {
 		switch v := ans.(type) {
 		case core.OptionAnswer:
@@ -32,6 +36,7 @@ func Platform() (*aws.Platform, error) {
 		}
 		return ""
 	}
+	logrus.Debugf("Trace Me - In aws.Platform() - D2")
 
 	defaultRegion := "us-east-1"
 	//if !IsKnownPublicRegion(defaultRegion, architecture) {
@@ -57,6 +62,9 @@ func Platform() (*aws.Platform, error) {
 	sort.Strings(shortRegions)
 
 	var region string
+	logrus.Debugf("Trace Me - Regions %v", regions)
+	logrus.Debugf("Trace Me - LongRegions %v", longRegions)
+	logrus.Debugf("Trace Me - In aws.Platform() - D3")
 	err := survey.Ask([]*survey.Question{
 		{
 			Prompt: &survey.Select{
@@ -77,8 +85,11 @@ func Platform() (*aws.Platform, error) {
 		},
 	}, &region)
 	if err != nil {
+		logrus.Debugf("Trace Me - Error %s", err.Error())
 		return nil, err
 	}
+	logrus.Debugf("Trace Me - In aws.Platform() - D4")
+	logrus.Debugf("Trace Me - Region - %s", region)
 
 	return &aws.Platform{
 		Region: region,

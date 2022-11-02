@@ -4,6 +4,7 @@ import (
 	survey "github.com/AlecAivazis/survey/v2"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/bailey84j/terraform_installer/pkg/asset"
 	awsconfig "github.com/bailey84j/terraform_installer/pkg/asset/installconfig/aws"
@@ -28,7 +29,7 @@ func (a *baseDomain) Dependencies() []asset.Asset {
 func (a *baseDomain) Generate(parents asset.Parents) error {
 	platform := &platform{}
 	parents.Get(platform)
-
+	logrus.Debugf("Trace Me - Base Domain - Generate...")
 	var err error
 	switch platform.CurrentName() {
 	/*case alibabacloud.Name:

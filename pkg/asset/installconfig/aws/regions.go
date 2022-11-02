@@ -10,7 +10,9 @@ import (
 func knownPublicRegions(architecture types.Architecture) map[string]string {
 	//	required := rhcos.AMIRegions(architecture)
 
-	regions := make(map[string]string)
+	regions := map[string]string{
+		"us-east-1": "Description of us-east-1",
+	}
 
 	return regions
 }

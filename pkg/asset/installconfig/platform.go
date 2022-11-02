@@ -7,6 +7,7 @@ import (
 	survey "github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/core"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/bailey84j/terraform_installer/pkg/asset"
 	awsconfig "github.com/bailey84j/terraform_installer/pkg/asset/installconfig/aws"
@@ -45,6 +46,7 @@ func (a *platform) Generate(asset.Parents) error {
 		return err
 	}*/
 	case aws.Name:
+		logrus.Debugf("Trace Me - In Platform Switch - AWS...")
 		a.AWS, err = awsconfig.Platform()
 		if err != nil {
 			return err

@@ -10,6 +10,7 @@ import (
 	survey "github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/core"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/bailey84j/terraform_installer/pkg/asset"
 	"github.com/bailey84j/terraform_installer/pkg/validate"
@@ -48,6 +49,7 @@ func readSSHKey(path string) (string, error) {
 
 // Generate generates the SSH public key asset.
 func (a *sshPublicKey) Generate(asset.Parents) error {
+	logrus.Debugf("Trace Me - In ssh.Generate.()")
 	pubKeys := map[string]string{
 		noSSHKey: "",
 	}
@@ -72,7 +74,7 @@ func (a *sshPublicKey) Generate(asset.Parents) error {
 		}
 		return nil
 	}
-
+	logrus.Debugf("Trace Me - In ssh.Generate.() - D1")
 	var paths []string
 	for path := range pubKeys {
 		paths = append(paths, path)
@@ -97,6 +99,7 @@ func (a *sshPublicKey) Generate(asset.Parents) error {
 			return nil
 		}),
 	); err != nil {
+		logrus.Debugf("Trace Me - ssh Error %s", err.Error())
 		return errors.Wrap(err, "failed UserInput")
 	}
 

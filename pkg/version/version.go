@@ -45,7 +45,7 @@ var (
 // String returns the human-friendly representation of the version.
 func String() (string, error) {
 	version, err := Version()
-	return fmt.Sprintf("OpenShift Installer %s", version), err
+	return fmt.Sprintf("Terraform Installer %s", version), err
 }
 
 // Version returns the installer/release version.

@@ -52,18 +52,20 @@ func (a *InstallConfig) Generate(parents asset.Parents) error {
 	sshPublicKey := &sshPublicKey{}
 	baseDomain := &baseDomain{}
 	clusterName := &clusterName{}
-	networking := &networking{}
+	//networking := &networking{}
 	pullSecret := &pullSecret{}
 	platform := &platform{}
+
 	parents.Get(
 		sshPublicKey,
 		baseDomain,
 		clusterName,
-		networking,
+		//networking,
 		pullSecret,
 		platform,
 	)
 
+	logrus.Debugf("Trace Me - clusterName.ClusterName - %v", clusterName)
 	a.Config = &types.InstallConfig{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: types.InstallConfigVersion,
@@ -76,6 +78,7 @@ func (a *InstallConfig) Generate(parents asset.Parents) error {
 		Licence:    pullSecret.PullSecret,
 	}
 
+	logrus.Debugf("Trace Me - config - %+v", a.Config)
 	//a.Config.AlibabaCloud = platform.AlibabaCloud
 	a.Config.AWS = platform.AWS
 	/*

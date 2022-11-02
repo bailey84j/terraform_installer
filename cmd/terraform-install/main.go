@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -8,6 +9,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
+	klogv2 "k8s.io/klog/v2"
 )
 
 var (
@@ -18,6 +21,20 @@ var (
 )
 
 func main() {
+	// This attempts to configure klog (used by vendored Kubernetes code) not
+	// to log anything.
+	// Handle k8s.io/klog
+	var fs flag.FlagSet
+	klog.InitFlags(&fs)
+	fs.Set("stderrthreshold", "4")
+	klog.SetOutput(ioutil.Discard)
+	// Handle k8s.io/klog/v2
+	var fsv2 flag.FlagSet
+	klogv2.InitFlags(&fsv2)
+	fsv2.Set("stderrthreshold", "4")
+	klogv2.SetOutput(ioutil.Discard)
+
+	installerMain()
 
 }
 
@@ -32,14 +49,14 @@ func installerMain() {
 	}
 
 	if err := rootCmd.Execute(); err != nil {
-		logrus.Fatalf("Error executing openshift-install: %v", err)
+		logrus.Fatalf("Error executing terraform-install: %v", err)
 	}
 }
 
 func newRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:              filepath.Base(os.Args[0]),
-		Short:            "Creates OpenShift clusters",
+		Short:            "Creates Terraform Enterprise clusters",
 		Long:             "",
 		PersistentPreRun: runRootCmd,
 		SilenceErrors:    true,
