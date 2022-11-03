@@ -14,6 +14,7 @@ import (
 	"github.com/bailey84j/terraform_installer/pkg/asset"
 	"github.com/bailey84j/terraform_installer/pkg/asset/cluster/aws"
 	"github.com/bailey84j/terraform_installer/pkg/asset/installconfig"
+	"github.com/bailey84j/terraform_installer/pkg/asset/password"
 	"github.com/bailey84j/terraform_installer/pkg/metrics/timer"
 	"github.com/bailey84j/terraform_installer/pkg/terraform"
 	platformstages "github.com/bailey84j/terraform_installer/pkg/terraform/stages/platform"
@@ -42,7 +43,7 @@ func (c *Cluster) Name() string {
 // the cluster.
 func (c *Cluster) Dependencies() []asset.Asset {
 	return []asset.Asset{
-		//&installconfig.ClusterID{},
+		&installconfig.ClusterID{},
 		&installconfig.InstallConfig{},
 		// PlatformCredsCheck, PlatformPermsCheck and PlatformProvisionCheck
 		// perform validations & check perms required to provision infrastructure.
@@ -53,7 +54,7 @@ func (c *Cluster) Dependencies() []asset.Asset {
 		//&installconfig.PlatformProvisionCheck{},
 		//&quota.PlatformQuotaCheck{},
 		&TerraformVariables{},
-		//&password.KubeadminPassword{},
+		&password.TFEPassword{},
 	}
 }
 
@@ -67,6 +68,7 @@ func (c *Cluster) Generate(parents asset.Parents) (err error) {
 	installConfig := &installconfig.InstallConfig{}
 	terraformVariables := &TerraformVariables{}
 	parents.Get(clusterID, installConfig, terraformVariables)
+	logrus.Debugf("Trace Me:\nclusterID - %+v\ninstallconfig - %+v\ntfvars - %+v", clusterID, installConfig, terraformVariables)
 	/*
 		if fs := installConfig.Config.FeatureSet; strings.HasSuffix(string(fs), "NoUpgrade") {
 			logrus.Warnf("FeatureSet %q is enabled. This FeatureSet does not allow upgrades and may affect the supportability of the cluster.", fs)
@@ -107,7 +109,10 @@ func (c *Cluster) Generate(parents asset.Parents) (err error) {
 	}
 
 	defer os.RemoveAll(terraformDir)
-	terraform.UnpackTerraform(terraformDirPath, stages)
+	err = terraform.UnpackTerraform(terraformDirPath, stages)
+	if err != nil {
+		return errors.Wrap(err, "cannot unpack terraform")
+	}
 
 	logrus.Infof("Creating infrastructure resources...")
 	switch platform {
@@ -133,6 +138,7 @@ func (c *Cluster) Generate(parents asset.Parents) (err error) {
 	}
 
 	for _, stage := range stages {
+		logrus.Debugf("Trace Me: applyStage: %s; %+v; %s; %+v", platform, stage, terraformDirPath, tfvarsFiles)
 		outputs, err := c.applyStage(platform, stage, terraformDirPath, tfvarsFiles)
 		if err != nil {
 			return errors.Wrapf(err, "failure applying terraform for %q stage", stage.Name())

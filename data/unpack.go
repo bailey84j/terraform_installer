@@ -5,6 +5,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Unpack unpacks the assets from this package into a target directory.
@@ -27,6 +29,7 @@ func UnpackWithFilePermissions(base string, uri string, permissions os.FileMode)
 	}
 
 	if info.IsDir() {
+		logrus.Debugf("data - unpack - create dir %s", base)
 		os.Mkdir(base, 0777)
 		children, err := file.Readdir(0)
 		if err != nil {

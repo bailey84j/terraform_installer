@@ -2,7 +2,9 @@ package targets
 
 import (
 	"github.com/bailey84j/terraform_installer/pkg/asset"
+	"github.com/bailey84j/terraform_installer/pkg/asset/cluster"
 	"github.com/bailey84j/terraform_installer/pkg/asset/installconfig"
+	"github.com/bailey84j/terraform_installer/pkg/asset/password"
 )
 
 var (
@@ -27,7 +29,7 @@ var (
 		&bootkube.KubeSystemConfigmapRootCA{},
 		&bootkube.OpenshiftConfigSecretPullSecret{},
 		&openshift.CloudCredsSecret{},
-		&openshift.KubeadminPasswordSecret{},
+		&openshift.TFEPasswordSecret{},
 		&openshift.RoleCloudCredsSecretReader{},
 		&openshift.AzureCloudProviderSecret{},*/
 	}
@@ -35,7 +37,7 @@ var (
 	// IgnitionConfigs are the ignition-configs targeted assets.
 	IgnitionConfigs = []asset.WritableAsset{
 		/*&kubeconfig.AdminClient{},
-		&password.KubeadminPassword{},
+		&password.TFEPassword{},
 		&machine.Master{},
 		&machine.Worker{},
 		&bootstrap.Bootstrap{},
@@ -45,7 +47,7 @@ var (
 	// SingleNodeIgnitionConfig is the bootstrap-in-place ignition-config targeted assets.
 	SingleNodeIgnitionConfig = []asset.WritableAsset{
 		/*&kubeconfig.AdminClient{},
-		&password.KubeadminPassword{},
+		&password.TFEPassword{},
 		&machine.Worker{},
 		&bootstrap.SingleNodeBootstrapInPlace{},
 		&cluster.Metadata{},*/
@@ -53,13 +55,13 @@ var (
 
 	// Cluster are the cluster targeted assets.
 	Cluster = []asset.WritableAsset{
-		/*&cluster.Metadata{},
-		&machine.MasterIgnitionCustomizations{},
-		&machine.WorkerIgnitionCustomizations{},
+		//&cluster.Metadata{},
+		//&machine.MasterIgnitionCustomizations{},
+		//&machine.WorkerIgnitionCustomizations{},
 		&cluster.TerraformVariables{},
-		&kubeconfig.AdminClient{},
-		&password.KubeadminPassword{},
-		&tls.JournalCertKey{},
-		&cluster.Cluster{},*/
+		//&kubeconfig.AdminClient{},
+		&password.TFEPassword{},
+		//&tls.JournalCertKey{},
+		&cluster.Cluster{},
 	}
 )

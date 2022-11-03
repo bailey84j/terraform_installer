@@ -84,10 +84,12 @@ func (p Provider) Extract(dir string) error {
 
 func unpack(srcDir, destDir string) error {
 	entries, err := mirror.ReadDir(srcDir)
+
 	if err != nil {
 		return err
 	}
 	for _, entry := range entries {
+		logrus.Debugf("unpack e1, %s; %+v", srcDir, entry.Name())
 		if entry.IsDir() {
 			childSrcDir := filepath.Join(srcDir, entry.Name())
 			childDestDir := filepath.Join(destDir, entry.Name())
@@ -95,6 +97,7 @@ func unpack(srcDir, destDir string) error {
 			if err := os.Mkdir(childDestDir, 0777); err != nil {
 				return err
 			}
+			logrus.Debugf("unpack e2, %s; %s", childSrcDir, childDestDir)
 			if err := unpack(childSrcDir, childDestDir); err != nil {
 				return err
 			}
@@ -109,17 +112,25 @@ func unpack(srcDir, destDir string) error {
 }
 
 func unpackFile(srcPath, destPath string) error {
+
+	mydir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
 	srcFile, err := mirror.Open(srcPath)
 	if err != nil {
+		logrus.Debugf("unpackfile e1, %s; %s; %+v", mydir, srcPath, srcFile)
 		return err
 	}
 	defer srcFile.Close()
 	destFile, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777)
 	if err != nil {
+		logrus.Debugf("unpack e2")
 		return err
 	}
 	defer destFile.Close()
 	if _, err := io.Copy(destFile, srcFile); err != nil {
+		logrus.Debugf("unpack e3")
 		return err
 	}
 	return nil
@@ -128,6 +139,7 @@ func unpackFile(srcPath, destPath string) error {
 // UnpackTerraformBinary unpacks the terraform binary from the embedded data so that it can be run to create the
 // infrastructure for the cluster.
 func UnpackTerraformBinary(dir string) error {
+	logrus.Debugf("creating %s directory", dir)
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		return err
 	}

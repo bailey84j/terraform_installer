@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-exec/tfexec"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/bailey84j/terraform_installer/data"
@@ -112,6 +113,7 @@ func addFileToAllDirectories(name string, data []byte, dir string) error {
 // UnpackTerraform unpacks the terraform binary and the specified provider binaries into the specified directory.
 func UnpackTerraform(dir string, stages []Stage) error {
 	// Unpack the terraform binary.
+	logrus.Debugf("Unpack the terraform binary to %s", dir)
 	if err := prov.UnpackTerraformBinary(filepath.Join(dir, "bin")); err != nil {
 		return err
 	}

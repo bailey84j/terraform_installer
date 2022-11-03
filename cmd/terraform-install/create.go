@@ -12,9 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/bailey84j/terraform_installer/pkg/asset"
 	"github.com/bailey84j/terraform_installer/pkg/asset/cluster"
@@ -63,16 +60,17 @@ var (
 			// Long:  "",
 			PostRun: func(_ *cobra.Command, _ []string) {
 				ctx := context.Background()
+				var err error
 
 				cleanup := setupFileHook(rootOpts.dir)
 				defer cleanup()
 
 				// FIXME: pulling the kubeconfig and metadata out of the root
 				// directory is a bit cludgy when we already have them in memory.
-				config, err := clientcmd.BuildConfigFromFlags("", filepath.Join(rootOpts.dir, "auth", "kubeconfig"))
-				if err != nil {
-					logrus.Fatal(errors.Wrap(err, "loading kubeconfig"))
-				}
+				//config, err := clientcmd.BuildConfigFromFlags("", filepath.Join(rootOpts.dir, "auth", "kubeconfig"))
+				//if err != nil {
+				//	logrus.Fatal(errors.Wrap(err, "loading kubeconfig"))
+				//}
 
 				timer.StartTimer("Bootstrap Complete")
 				/*
@@ -109,7 +107,7 @@ var (
 				}
 				timer.StopTimer("Bootstrap Destroy")
 
-				err = waitForInstallComplete(ctx, config, rootOpts.dir)
+				err = waitForInstallComplete(ctx, rootOpts.dir)
 				if err != nil {
 					//if err2 := logClusterOperatorConditions(ctx, config); err2 != nil {
 					//	logrus.Error("Attempted to gather ClusterOperator status after installation failure: ", err2)
@@ -263,19 +261,20 @@ func runTargetCmd(targets ...asset.WritableAsset) func(cmd *cobra.Command, args 
 	}
 }
 
-func waitForBootstrapComplete(ctx context.Context, config *rest.Config) *clusterCreateError {
-	client, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return newClientError(errors.Wrap(err, "creating a Kubernetes client"))
-	}
+func waitForBootstrapComplete(ctx context.Context) *clusterCreateError {
+	var err error
+	//client, err := kubernetes.NewForConfig(config)
+	//if err != nil {
+	//	return newClientError(errors.Wrap(err, "creating a Kubernetes client"))
+	//}
 
-	discovery := client.Discovery()
+	//discovery := client.Discovery()
 
 	apiTimeout := 20 * time.Minute
 
-	untilTime := time.Now().Add(apiTimeout)
-	logrus.Infof("Waiting up to %v (until %v) for the Kubernetes API at %s...",
-		apiTimeout, untilTime.Format(time.Kitchen), config.Host)
+	//untilTime := time.Now().Add(apiTimeout)
+	//logrus.Infof("Waiting up to %v (until %v) for the Kubernetes API at %s...",
+	//	apiTimeout, untilTime.Format(time.Kitchen))
 
 	apiContext, cancel := context.WithTimeout(ctx, apiTimeout)
 	defer cancel()
@@ -288,9 +287,9 @@ func waitForBootstrapComplete(ctx context.Context, config *rest.Config) *cluster
 	timer.StartTimer("API")
 	var lastErr error
 	wait.Until(func() {
-		version, err := discovery.ServerVersion()
+		//version, err := discovery.ServerVersion()
 		if err == nil {
-			logrus.Infof("API %s up", version)
+			//logrus.Infof("API %s up", version)
 			timer.StopTimer("API")
 			cancel()
 		} else {
@@ -316,13 +315,13 @@ func waitForBootstrapComplete(ctx context.Context, config *rest.Config) *cluster
 		return newAPIError(err)
 	}
 
-	return waitForBootstrapConfigMap(ctx, client)
+	return waitForBootstrapConfigMap(ctx)
 }
 
 // waitForBootstrapConfigMap watches the configmaps in the kube-system namespace
 // and waits for the bootstrap configmap to report that bootstrapping has
 // completed.
-func waitForBootstrapConfigMap(ctx context.Context, client *kubernetes.Clientset) *clusterCreateError {
+func waitForBootstrapConfigMap(ctx context.Context) *clusterCreateError {
 	timeout := 30 * time.Minute
 
 	// Wait longer for baremetal, due to length of time it takes to boot
@@ -376,7 +375,7 @@ func waitForBootstrapConfigMap(ctx context.Context, client *kubernetes.Clientset
 
 // waitForInitializedCluster watches the ClusterVersion waiting for confirmation
 // that the cluster has been initialized.
-func waitForInitializedCluster(ctx context.Context, config *rest.Config) error {
+func waitForInitializedCluster(ctx context.Context) error {
 	// TODO revert this value back to 30 minutes.  It's currently at the end of 4.6 and we're trying to see if the
 	timeout := 40 * time.Minute
 
@@ -390,8 +389,8 @@ func waitForInitializedCluster(ctx context.Context, config *rest.Config) error {
 	}
 
 	untilTime := time.Now().Add(timeout)
-	logrus.Infof("Waiting up to %v (until %v) for the cluster at %s to initialize...",
-		timeout, untilTime.Format(time.Kitchen), config.Host)
+	logrus.Infof("Waiting up to %v (until %v) for the cluster at to initialize...",
+		timeout, untilTime.Format(time.Kitchen))
 	//cc, err := configclient.NewForConfig(config)
 	//if err != nil {
 	//	return errors.Wrap(err, "failed to create a config client")
@@ -460,7 +459,7 @@ func logComplete(directory, consoleURL string) error {
 		return err
 	}
 	kubeconfig := filepath.Join(absDir, "auth", "kubeconfig")
-	pwFile := filepath.Join(absDir, "auth", "kubeadmin-password")
+	pwFile := filepath.Join(absDir, "auth", "tfe-password")
 	pw, err := ioutil.ReadFile(pwFile)
 	if err != nil {
 		return err
@@ -469,13 +468,13 @@ func logComplete(directory, consoleURL string) error {
 	logrus.Infof("To access the cluster as the system:admin user when using 'oc', run 'export KUBECONFIG=%s'", kubeconfig)
 	if consoleURL != "" {
 		logrus.Infof("Access the OpenShift web-console here: %s", consoleURL)
-		logrus.Infof("Login to the console with user: %q, and password: %q", "kubeadmin", pw)
+		logrus.Infof("Login to the console with user: %q, and password: %q", "tfe", pw)
 	}
 	return nil
 }
 
-func waitForInstallComplete(ctx context.Context, config *rest.Config, directory string) error {
-	if err := waitForInitializedCluster(ctx, config); err != nil {
+func waitForInstallComplete(ctx context.Context, directory string) error {
+	if err := waitForInitializedCluster(ctx); err != nil {
 		return err
 	}
 	/*
